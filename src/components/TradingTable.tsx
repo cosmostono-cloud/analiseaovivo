@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SignalBadge from './SignalBadge';
 import { TradingSignal } from '@/hooks/useTradingSignals';
-import { Loader2, Info, Timer, Zap } from 'lucide-react';
+import { Loader2, Info, Timer, Zap, CheckCircle2, Circle } from 'lucide-react';
 
 interface TradingTableProps {
   signals: TradingSignal[];
@@ -25,7 +25,7 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
-        <p className="text-slate-400 animate-pulse font-medium">Escaneando oportunidades...</p>
+        <p className="text-slate-400 animate-pulse font-medium">Escaneando rastro institucional...</p>
       </div>
     );
   }
@@ -40,15 +40,14 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                 <TableHead className="font-bold text-slate-400 py-5 px-6">Ativo</TableHead>
                 <TableHead className="font-bold text-slate-400 py-5">Status</TableHead>
                 <TableHead className="font-bold text-slate-400 py-5">Sinal</TableHead>
-                <TableHead className="font-bold text-slate-400 py-5">Preço</TableHead>
-                <TableHead className="font-bold text-slate-400 py-5 px-6">Análise Técnica</TableHead>
+                <TableHead className="font-bold text-slate-400 py-5">Checklist Larissa</TableHead>
+                <TableHead className="font-bold text-slate-400 py-5 px-6">Análise de Contexto</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {signals.map((item, index) => {
                 const isOpportunity = item.status === 'AGORA';
-                const isImminent = item.status === 'IMINENTE';
-
+                
                 return (
                   <TableRow 
                     key={`${item.ativo}-${index}`} 
@@ -57,8 +56,7 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                     <TableCell className="py-5 px-6">
                       <div className="flex items-center gap-3">
                         <div className={`w-1.5 h-6 rounded-full transition-all duration-500 ${
-                          isOpportunity ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] scale-y-125' : 
-                          isImminent ? 'bg-amber-500' : 'bg-slate-700'
+                          isOpportunity ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] scale-y-125' : 'bg-slate-700'
                         }`} />
                         <span className={`font-black tracking-tight transition-all duration-300 ${
                           isOpportunity ? 'text-white text-lg' : 'text-slate-300'
@@ -72,7 +70,7 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                         <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white animate-pulse flex items-center gap-1 w-fit">
                           <Zap className="h-3 w-3 fill-white" /> AGORA
                         </Badge>
-                      ) : isImminent ? (
+                      ) : item.status === 'IMINENTE' ? (
                         <Badge variant="outline" className="border-amber-500/50 text-amber-500 flex items-center gap-1 w-fit">
                           <Timer className="h-3 w-3" /> IMINENTE
                         </Badge>
@@ -83,8 +81,21 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                     <TableCell className="py-5">
                       <SignalBadge sinal={item.sinal} />
                     </TableCell>
-                    <TableCell className="font-mono text-slate-300 py-5">
-                      {item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
+                    <TableCell className="py-5">
+                      <div className="flex gap-3">
+                        <div className="flex flex-col items-center gap-1">
+                          {item.validacoes.tendencia ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">Tend</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          {item.validacoes.volume ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">Vol</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          {item.validacoes.gatilho ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">Gat</span>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="py-5 px-6">
                       <div className="flex items-start gap-2 max-w-md">

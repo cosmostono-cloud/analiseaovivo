@@ -8,6 +8,11 @@ export interface TradingSignal {
   sinal: string;
   motivo: string;
   status: 'AGORA' | 'IMINENTE' | 'AGUARDANDO';
+  validacoes: {
+    tendencia: boolean;
+    volume: boolean;
+    gatilho: boolean;
+  };
 }
 
 const MOCK_DATA: TradingSignal[] = [
@@ -16,35 +21,24 @@ const MOCK_DATA: TradingSignal[] = [
     preco: 128450, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Contexto M15 de alta. Gatilho de entrada confirmado no M2 após teste de Vwap." 
+    motivo: "Rastro institucional detectado no M15. Gatilho de exaustão de venda no M2 confirmado.",
+    validacoes: { tendencia: true, volume: true, gatilho: true }
   },
   { 
     ativo: "DÓLAR (WDO)", 
     preco: 5.124, 
     sinal: "VENDA", 
     status: "IMINENTE",
-    motivo: "Resistência no H1. Aguardando exaustão de fluxo no M3 para entrada curta." 
-  },
-  { 
-    ativo: "HK50", 
-    preco: 16742.50, 
-    sinal: "AGUARDANDO", 
-    status: "AGUARDANDO",
-    motivo: "Aguardando alinhamento do M15 com o M3. Mercado sem direção clara no momento." 
+    motivo: "Preço em zona de valor do H1. Aguardando entrada de volume vendedor no M3.",
+    validacoes: { tendencia: true, volume: false, gatilho: false }
   },
   { 
     ativo: "US500", 
     preco: 5132.25, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Tendência macro de alta. Micro-pivô rompido no M2 com volume institucional." 
-  },
-  { 
-    ativo: "GOLD (XAUUSD)", 
-    preco: 2345.60, 
-    sinal: "COMPRA", 
-    status: "IMINENTE",
-    motivo: "Zona de valor no M30. Monitorando gatilho de reversão no M3 para reduzir stop." 
+    motivo: "Alinhamento de fractais. Rompimento de micro-pivô com agressão compradora.",
+    validacoes: { tendencia: true, volume: true, gatilho: true }
   },
 ];
 
