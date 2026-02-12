@@ -7,6 +7,7 @@ export interface TradingSignal {
   preco: number;
   sinal: string;
   motivo: string;
+  status: 'AGORA' | 'IMINENTE' | 'AGUARDANDO';
 }
 
 const MOCK_DATA: TradingSignal[] = [
@@ -14,55 +15,53 @@ const MOCK_DATA: TradingSignal[] = [
     ativo: "ÍNDICE (WIN)", 
     preco: 128450, 
     sinal: "COMPRA", 
-    motivo: "Tendência de alta confirmada pelo volume e cruzamento de médias no M5." 
+    status: "AGORA",
+    motivo: "Setup Águia confirmado: Rompimento de máxima anterior com volume institucional acima da média." 
   },
   { 
     ativo: "DÓLAR (WDO)", 
     preco: 5.124, 
     sinal: "VENDA", 
-    motivo: "Exaustão de compra em região de resistência histórica com fluxo vendedor." 
+    status: "IMINENTE",
+    motivo: "Aproximação de zona de exaustão (R1). Aguardando gatilho de reversão no fluxo." 
   },
   { 
     ativo: "HK50", 
     preco: 16742.50, 
     sinal: "AGUARDANDO", 
-    motivo: "Ativo em zona de lateralização. Aguardando rompimento do suporte em 16700." 
+    status: "AGUARDANDO",
+    motivo: "Mercado lateral. Sem direção clara segundo a técnica de canais da Larissa." 
   },
   { 
     ativo: "US500", 
     preco: 5132.25, 
     sinal: "COMPRA", 
-    motivo: "Rompimento de pivô de alta com alvo na projeção de 161.8% de Fibonacci." 
+    status: "AGORA",
+    motivo: "Pullback na média de 20 períodos com rejeição de fundo. Entrada confirmada." 
   },
   { 
     ativo: "GOLD (XAUUSD)", 
     preco: 2345.60, 
     sinal: "COMPRA", 
-    motivo: "Setup Águia ativado: Rejeição de fundo com aumento de volatilidade." 
-  },
-  { 
-    ativo: "BTC/USDT", 
-    preco: 64250.50, 
-    sinal: "AGUARDANDO", 
-    motivo: "Aguardando fechamento do candle diário para confirmação de tendência." 
+    status: "IMINENTE",
+    motivo: "Formação de pivô de alta no M15. Aguardando fechamento acima da resistência." 
   },
 ];
 
 export const useTradingSignals = () => {
   const [signals, setSignals] = useState<TradingSignal[]>(MOCK_DATA);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchSignals = async () => {
+    setLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:5000/sinais');
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
-        setError(null);
       }
     } catch (err) {
-      // Mantém os mocks se a API falhar
+      // Mantém mocks
     } finally {
       setLoading(false);
     }
@@ -70,9 +69,9 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 10000);
+    const interval = setInterval(fetchSignals, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  return { signals, loading, error, refetch: fetchSignals };
+  return { signals, loading, refetch: fetchSignals };
 };
