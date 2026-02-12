@@ -1,14 +1,18 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import TradingTable from "@/components/TradingTable";
+import TradePlanCard from "@/components/TradePlanCard";
 import { useTradingSignals } from "@/hooks/useTradingSignals";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target, GraduationCap, Sparkles } from "lucide-react";
 
 const Index = () => {
   const { signals, loading, refetch } = useTradingSignals();
+  const [trainingMode, setTrainingMode] = useState(true);
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-indigo-500/30">
@@ -30,10 +34,16 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-full uppercase tracking-tighter">
-              <Zap className="h-3 w-3 fill-indigo-400 animate-pulse" />
-              Multi-Timeframe Analysis
+          <div className="flex items-center gap-6">
+            <div className="flex items-center space-x-3 bg-slate-900/50 border border-slate-800 px-4 py-2 rounded-full">
+              <GraduationCap className={`h-4 w-4 ${trainingMode ? 'text-indigo-400' : 'text-slate-600'}`} />
+              <Label htmlFor="training-mode" className="text-[10px] font-black uppercase tracking-widest cursor-pointer">Modo Treino</Label>
+              <Switch 
+                id="training-mode" 
+                checked={trainingMode} 
+                onCheckedChange={setTrainingMode}
+                className="data-[state=checked]:bg-indigo-600"
+              />
             </div>
             
             <Button 
@@ -54,14 +64,16 @@ const Index = () => {
         <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest">
-              <LayoutDashboard className="h-3 w-3" /> Dashboard de Sinais
+              <Sparkles className="h-3 w-3" /> {trainingMode ? 'Modo Deus Ativado' : 'Dashboard de Sinais'}
             </div>
             <h2 className="text-4xl font-black text-white leading-tight">
               Entradas Sniper <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">M2 & M3 Confirmadas</span>
             </h2>
             <p className="text-slate-400 max-w-xl text-lg leading-relaxed">
-              Análise de contexto em tempos maiores com gatilhos de precisão em micro-timeframes para otimização de risco.
+              {trainingMode 
+                ? "Visualizando rastro institucional e cálculos de payoff baseados no operacional premium."
+                : "Análise de contexto em tempos maiores com gatilhos de precisão em micro-timeframes."}
             </p>
           </div>
           
@@ -83,10 +95,28 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Tabela de Sinais */}
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/30 to-violet-500/30 rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
-          <TradingTable signals={signals} loading={loading} />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Tabela de Sinais (Ocupa 3 colunas) */}
+          <div className="lg:col-span-3 relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/30 to-violet-500/30 rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
+            <TradingTable signals={signals} loading={loading} />
+          </div>
+
+          {/* Sidebar de Treinamento (Ocupa 1 coluna) */}
+          <div className="space-y-6">
+            {trainingMode && signals.filter(s => s.status === 'AGORA').map((signal, idx) => (
+              <TradePlanCard key={idx} signal={signal} />
+            ))}
+            
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-2xl">
+              <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <GraduationCap className="h-3 w-3" /> Dica da Larissa
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                "O segredo não é o indicador, é o rastro. Se o M15 não autoriza, o M2 não entra. Espere a exaustão do player contrário."
+              </p>
+            </div>
+          </div>
         </div>
         
         {/* Footer Info */}
