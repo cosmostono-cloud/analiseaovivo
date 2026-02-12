@@ -16,35 +16,35 @@ const MOCK_DATA: TradingSignal[] = [
     preco: 128450, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Setup Águia confirmado: Rompimento de máxima anterior com volume institucional acima da média." 
+    motivo: "Contexto M15 de alta. Gatilho de entrada confirmado no M2 após teste de Vwap." 
   },
   { 
     ativo: "DÓLAR (WDO)", 
     preco: 5.124, 
     sinal: "VENDA", 
     status: "IMINENTE",
-    motivo: "Aproximação de zona de exaustão (R1). Aguardando gatilho de reversão no fluxo." 
+    motivo: "Resistência no H1. Aguardando exaustão de fluxo no M3 para entrada curta." 
   },
   { 
     ativo: "HK50", 
     preco: 16742.50, 
     sinal: "AGUARDANDO", 
     status: "AGUARDANDO",
-    motivo: "Mercado lateral. Sem direção clara segundo a técnica de canais da Larissa." 
+    motivo: "Aguardando alinhamento do M15 com o M3. Mercado sem direção clara no momento." 
   },
   { 
     ativo: "US500", 
     preco: 5132.25, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Pullback na média de 20 períodos com rejeição de fundo. Entrada confirmada." 
+    motivo: "Tendência macro de alta. Micro-pivô rompido no M2 com volume institucional." 
   },
   { 
     ativo: "GOLD (XAUUSD)", 
     preco: 2345.60, 
     sinal: "COMPRA", 
     status: "IMINENTE",
-    motivo: "Formação de pivô de alta no M15. Aguardando fechamento acima da resistência." 
+    motivo: "Zona de valor no M30. Monitorando gatilho de reversão no M3 para reduzir stop." 
   },
 ];
 
@@ -61,7 +61,7 @@ export const useTradingSignals = () => {
         setSignals(data);
       }
     } catch (err) {
-      // Mantém mocks
+      // Mantém mocks se a API não estiver rodando
     } finally {
       setLoading(false);
     }

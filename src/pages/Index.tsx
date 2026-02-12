@@ -5,7 +5,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import TradingTable from "@/components/TradingTable";
 import { useTradingSignals } from "@/hooks/useTradingSignals";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer } from "lucide-react";
+import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target } from "lucide-react";
 
 const Index = () => {
   const { signals, loading, refetch } = useTradingSignals();
@@ -33,7 +33,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-2 text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-4 py-2 rounded-full uppercase tracking-tighter">
               <Zap className="h-3 w-3 fill-indigo-400 animate-pulse" />
-              Live Market Analysis
+              Multi-Timeframe Analysis
             </div>
             
             <Button 
@@ -57,11 +57,11 @@ const Index = () => {
               <LayoutDashboard className="h-3 w-3" /> Dashboard de Sinais
             </div>
             <h2 className="text-4xl font-black text-white leading-tight">
-              Análise de Fluxo <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Em Tempo Real</span>
+              Entradas Sniper <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">M2 & M3 Confirmadas</span>
             </h2>
             <p className="text-slate-400 max-w-xl text-lg leading-relaxed">
-              Otimizado com a técnica da Larissa Sihle para identificar o rastro institucional antes do movimento acontecer.
+              Análise de contexto em tempos maiores com gatilhos de precisão em micro-timeframes para otimização de risco.
             </p>
           </div>
           
@@ -93,24 +93,24 @@ const Index = () => {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
             <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4">
-              <Zap className="h-5 w-5 text-indigo-400" />
+              <Target className="h-5 w-5 text-indigo-400" />
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Execução Águia</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">Aguarde o sinal "AGORA" para entradas de alta probabilidade. Sinais "IMINENTE" servem para preparação de lote.</p>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Gatilho Sniper</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">As entradas são refinadas nos tempos de 2 e 3 minutos. Isso permite um Stop Loss mais curto e um alvo muito mais longo.</p>
           </div>
           <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
             <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
               <ShieldCheck className="h-5 w-5 text-emerald-400" />
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Risco Controlado</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">O scanner utiliza o rastro dos grandes players. Nunca opere sem Stop Loss posicionado abaixo da mínima do gatilho.</p>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Contexto Macro</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">O scanner valida a tendência no M15 e H1 antes de buscar o gatilho no micro. Nunca opere contra a tendência principal.</p>
           </div>
           <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
             <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center mb-4">
               <Timer className="h-5 w-5 text-amber-400" />
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Tempo Gráfico</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">Análise baseada no M5 e M15 para day trade. Para o HK50, considere a volatilidade da abertura.</p>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Filtro de Volatilidade</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">Em tempos curtos (M2/M3), o volume é crucial. O sinal "AGORA" só aparece quando há agressão institucional confirmada.</p>
           </div>
         </div>
       </main>
