@@ -5,7 +5,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import TradingTable from "@/components/TradingTable";
 import { useTradingSignals } from "@/hooks/useTradingSignals";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard } from "lucide-react";
+import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer } from "lucide-react";
 
 const Index = () => {
   const { signals, loading, refetch } = useTradingSignals();
