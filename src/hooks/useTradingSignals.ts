@@ -8,12 +8,14 @@ export interface TradingSignal {
   sinal: string;
 }
 
-// Dados de exemplo para visualização imediata
+// Dados de exemplo com os ativos solicitados
 const MOCK_DATA: TradingSignal[] = [
-  { ativo: "BTC/USDT", preco: 64250.50, sinal: "COMPRA" },
-  { ativo: "ETH/USDT", preco: 3450.20, sinal: "VENDA" },
-  { ativo: "SOL/USDT", preco: 145.80, sinal: "AGUARDANDO" },
-  { ativo: "EUR/USD", preco: 1.0854, sinal: "COMPRA" },
+  { ativo: "ÍNDICE (WIN)", preco: 128450, sinal: "COMPRA" },
+  { ativo: "DÓLAR (WDO)", preco: 5.124, sinal: "VENDA" },
+  { ativo: "HK50", preco: 16742.50, sinal: "AGUARDANDO" },
+  { ativo: "US500", preco: 5132.25, sinal: "COMPRA" },
+  { ativo: "GOLD (XAUUSD)", preco: 2345.60, sinal: "COMPRA" },
+  { ativo: "BTC/USDT", preco: 64250.50, sinal: "AGUARDANDO" },
 ];
 
 export const useTradingSignals = () => {
@@ -23,18 +25,16 @@ export const useTradingSignals = () => {
 
   const fetchSignals = async () => {
     try {
-      // Tentativa de buscar dados reais
+      // Tentativa de buscar dados reais da API local
       const response = await fetch('http://127.0.0.1:5000/sinais');
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
         setError(null);
       } else {
-        // Se a API falhar, mantemos os mocks mas avisamos no console
         console.warn("API local não respondeu. Usando dados de demonstração.");
       }
     } catch (err) {
-      // Silenciamos o erro para não travar a tela, mantendo os mocks
       console.log("Aguardando API local... Usando dados de demonstração.");
     } finally {
       setLoading(false);
