@@ -6,12 +6,14 @@ export interface TradingSignal {
   ativo: string;
   preco: number;
   sinal: string;
-  motivo: string;
   status: 'AGORA' | 'IMINENTE' | 'AGUARDANDO';
+  metodo: 'GORJETA' | 'TENDÊNCIA' | 'REVERSÃO';
+  vacuoLivre: string; // Espaço até o próximo obstáculo
   validacoes: {
-    tendencia: boolean;
-    volume: boolean;
-    gatilho: boolean;
+    tendenciaM15: boolean;
+    volumeConfirmado: boolean;
+    gatilhoMicro: boolean;
+    zonaValor: boolean;
   };
   detalhesTecnicos: {
     stopLoss: number;
@@ -19,6 +21,7 @@ export interface TradingSignal {
     payoff: string;
     regraAplicada: string;
     contextoMacro: string;
+    suporteResistencia: string;
   };
 }
 
@@ -28,14 +31,16 @@ const MOCK_DATA: TradingSignal[] = [
     preco: 128450, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Rastro institucional detectado no M15. Gatilho de exaustão de venda no M2 confirmado.",
-    validacoes: { tendencia: true, volume: true, gatilho: true },
+    metodo: "TENDÊNCIA",
+    vacuoLivre: "450 pts até VWAP Diária",
+    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: true, zonaValor: true },
     detalhesTecnicos: {
       stopLoss: 128320,
-      takeProfit: 128850,
-      payoff: "1:3.3",
-      regraAplicada: "Módulo 03: Exaustão de Venda + Vwap",
-      contextoMacro: "H1 em tendência de alta, preço acima da média de 200."
+      takeProfit: 128900,
+      payoff: "1:3.5",
+      regraAplicada: "Módulo 03: Rastro Institucional + Vácuo Livre",
+      contextoMacro: "Tendência de alta no M15 confirmada. Preço acima da média de 20.",
+      suporteResistencia: "Suporte em 128.200 (Mínima anterior)"
     }
   },
   { 
@@ -43,14 +48,16 @@ const MOCK_DATA: TradingSignal[] = [
     preco: 5.124, 
     sinal: "VENDA", 
     status: "IMINENTE",
-    motivo: "Preço em zona de valor do H1. Aguardando entrada de volume vendedor no M3.",
-    validacoes: { tendencia: true, volume: false, gatilho: false },
+    metodo: "GORJETA",
+    vacuoLivre: "8 pts até Ajuste",
+    validacoes: { tendenciaM15: true, volumeConfirmado: false, gatilhoMicro: false, zonaValor: true },
     detalhesTecnicos: {
-      stopLoss: 5.135,
-      takeProfit: 5.090,
-      payoff: "1:3.0",
-      regraAplicada: "Módulo 04: Rejeição de Topo H1",
-      contextoMacro: "Dólar testando máxima semanal com divergência de volume."
+      stopLoss: 5.132,
+      takeProfit: 5.115,
+      payoff: "1:1.5",
+      regraAplicada: "Método Gorjeta: Scalp em Zona de Exaustão",
+      contextoMacro: "Dólar esticado no H1, buscando retorno à média.",
+      suporteResistencia: "Resistência em 5.140 (Topo do dia)"
     }
   },
   { 
@@ -58,89 +65,16 @@ const MOCK_DATA: TradingSignal[] = [
     preco: 5132.25, 
     sinal: "COMPRA", 
     status: "AGORA",
-    motivo: "Alinhamento de fractais. Rompimento de micro-pivô com agressão compradora.",
-    validacoes: { tendencia: true, volume: true, gatilho: true },
+    metodo: "TENDÊNCIA",
+    vacuoLivre: "15 pts de Vácuo (Céu Limpo)",
+    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: true, zonaValor: true },
     detalhesTecnicos: {
-      stopLoss: 5125.00,
-      takeProfit: 5155.00,
-      payoff: "1:3.1",
-      regraAplicada: "Módulo 02: Alinhamento de Fractais",
-      contextoMacro: "S&P500 em forte rali institucional após abertura de NY."
-    }
-  },
-  { 
-    ativo: "HK50", 
-    preco: 16742.50, 
-    sinal: "VENDA", 
-    status: "AGUARDANDO",
-    motivo: "Aguardando teste da região de liquidez no M15. Sem gatilho no micro.",
-    validacoes: { tendencia: false, volume: false, gatilho: false },
-    detalhesTecnicos: {
-      stopLoss: 16850.00,
-      takeProfit: 16400.00,
-      payoff: "1:3.5",
-      regraAplicada: "Módulo 05: Liquidez Institucional",
-      contextoMacro: "Mercado asiático em consolidação lateral."
-    }
-  },
-  { 
-    ativo: "GOLD (XAUUSD)", 
-    preco: 2345.60, 
-    sinal: "COMPRA", 
-    status: "IMINENTE",
-    motivo: "Zona de valor no M30. Monitorando gatilho de reversão no M3 para reduzir stop.",
-    validacoes: { tendencia: true, volume: true, gatilho: false },
-    detalhesTecnicos: {
-      stopLoss: 2338.00,
-      takeProfit: 2375.00,
-      payoff: "1:4.2",
-      regraAplicada: "Módulo 03: Reversão de Tendência",
-      contextoMacro: "Ouro em tendência de alta forte no diário."
-    }
-  },
-  { 
-    ativo: "NAS100", 
-    preco: 18245.75, 
-    sinal: "VENDA", 
-    status: "AGORA",
-    motivo: "Exaustão de compra no topo histórico. Gatilho de rejeição no M2.",
-    validacoes: { tendencia: true, volume: true, gatilho: true },
-    detalhesTecnicos: {
-      stopLoss: 18275.00,
-      takeProfit: 18120.00,
-      payoff: "1:4.1",
-      regraAplicada: "Módulo 04: Topo Duplo Institucional",
-      contextoMacro: "Nasdaq esticada, buscando correção para média de 20."
-    }
-  },
-  { 
-    ativo: "EURUSD", 
-    preco: 1.0845, 
-    sinal: "COMPRA", 
-    status: "AGUARDANDO",
-    motivo: "Aguardando rompimento da Vwap diária com volume.",
-    validacoes: { tendencia: true, volume: false, gatilho: false },
-    detalhesTecnicos: {
-      stopLoss: 1.0820,
-      takeProfit: 1.0910,
-      payoff: "1:2.6",
-      regraAplicada: "Módulo 01: Estrutura de Mercado",
-      contextoMacro: "Dólar global perdendo força."
-    }
-  },
-  { 
-    ativo: "BTCUSD", 
-    preco: 64230, 
-    sinal: "VENDA", 
-    status: "IMINENTE",
-    motivo: "Captura de liquidez acima dos 65k. Aguardando pivô de baixa no M3.",
-    validacoes: { tendencia: false, volume: true, gatilho: false },
-    detalhesTecnicos: {
-      stopLoss: 65100,
-      takeProfit: 61500,
-      payoff: "1:3.1",
-      regraAplicada: "Módulo 05: Fakeout Institucional",
-      contextoMacro: "Bitcoin em zona de resistência psicológica."
+      stopLoss: 5126.00,
+      takeProfit: 5150.00,
+      payoff: "1:3.0",
+      regraAplicada: "Módulo 02: Alinhamento de Fractais (M15 + M2)",
+      contextoMacro: "S&P500 rompeu consolidação com volume institucional.",
+      suporteResistencia: "Suporte em 5120.00 (VWAP)"
     }
   }
 ];

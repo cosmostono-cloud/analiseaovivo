@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SignalBadge from './SignalBadge';
 import { TradingSignal } from '@/hooks/useTradingSignals';
-import { Loader2, Info, Timer, Zap, CheckCircle2, Circle } from 'lucide-react';
+import { Loader2, Info, Timer, Zap, CheckCircle2, Circle, ArrowRightCircle } from 'lucide-react';
 
 interface TradingTableProps {
   signals: TradingSignal[];
@@ -38,10 +38,10 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
             <TableHeader className="bg-slate-950/50">
               <TableRow className="border-slate-800 hover:bg-transparent">
                 <TableHead className="font-bold text-slate-400 py-5 px-6">Ativo</TableHead>
-                <TableHead className="font-bold text-slate-400 py-5">Status</TableHead>
+                <TableHead className="font-bold text-slate-400 py-5">Estratégia</TableHead>
                 <TableHead className="font-bold text-slate-400 py-5">Sinal</TableHead>
+                <TableHead className="font-bold text-slate-400 py-5">Vácuo Livre</TableHead>
                 <TableHead className="font-bold text-slate-400 py-5">Checklist Larissa</TableHead>
-                <TableHead className="font-bold text-slate-400 py-5 px-6">Análise de Contexto</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -66,43 +66,39 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                       </div>
                     </TableCell>
                     <TableCell className="py-5">
-                      {isOpportunity ? (
-                        <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white animate-pulse flex items-center gap-1 w-fit">
-                          <Zap className="h-3 w-3 fill-white" /> AGORA
-                        </Badge>
-                      ) : item.status === 'IMINENTE' ? (
-                        <Badge variant="outline" className="border-amber-500/50 text-amber-500 flex items-center gap-1 w-fit">
-                          <Timer className="h-3 w-3" /> IMINENTE
-                        </Badge>
-                      ) : (
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Aguardando</span>
-                      )}
+                      <Badge variant="outline" className={`${
+                        item.metodo === 'GORJETA' ? 'border-amber-500/50 text-amber-400' : 'border-indigo-500/50 text-indigo-400'
+                      } font-bold text-[10px]`}>
+                        {item.metodo}
+                      </Badge>
                     </TableCell>
                     <TableCell className="py-5">
                       <SignalBadge sinal={item.sinal} />
                     </TableCell>
                     <TableCell className="py-5">
+                      <div className="flex items-center gap-2 text-xs font-medium text-emerald-400">
+                        <ArrowRightCircle className="h-3 w-3" />
+                        {item.vacuoLivre}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-5">
                       <div className="flex gap-3">
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.tendencia ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
-                          <span className="text-[8px] font-bold text-slate-500 uppercase">Tend</span>
+                          {item.validacoes.tendenciaM15 ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">M15</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.volume ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          {item.validacoes.zonaValor ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">Zona</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          {item.validacoes.volumeConfirmado ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
                           <span className="text-[8px] font-bold text-slate-500 uppercase">Vol</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.gatilho ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
-                          <span className="text-[8px] font-bold text-slate-500 uppercase">Gat</span>
+                          {item.validacoes.gatilhoMicro ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          <span className="text-[8px] font-bold text-slate-500 uppercase">M2/3</span>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-5 px-6">
-                      <div className="flex items-start gap-2 max-w-md">
-                        <Info className={`h-4 w-4 mt-0.5 shrink-0 ${isOpportunity ? 'text-indigo-400' : 'text-slate-500'}`} />
-                        <span className={`text-sm leading-relaxed ${isOpportunity ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
-                          {item.motivo}
-                        </span>
                       </div>
                     </TableCell>
                   </TableRow>
