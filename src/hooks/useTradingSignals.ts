@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { toast } from "sonner";
 
 export interface TradingSignal {
   ativo: string;
@@ -42,23 +43,6 @@ const MOCK_DATA: TradingSignal[] = [
       contextoMacro: "Tendência de alta no M15.",
       suporteResistencia: "Suporte em 128.200"
     }
-  },
-  { 
-    ativo: "DÓLAR (WDO)", 
-    preco: 5.124, 
-    sinal: "VENDA", 
-    status: "IMINENTE",
-    metodo: "GORJETA",
-    vacuoLivre: "8 pts até Ajuste",
-    validacoes: { tendenciaM15: true, volumeConfirmado: false, gatilhoMicro: false, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 5.132,
-      takeProfit: 5.115,
-      payoff: "1:1.5",
-      regraAplicada: "Método Gorjeta: Exaustão",
-      contextoMacro: "Dólar esticado no H1.",
-      suporteResistencia: "Resistência em 5.140"
-    }
   }
 ];
 
@@ -70,36 +54,36 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     
-    // Prioridade 1: Localtunnel (HTTPS - Evita bloqueio do navegador)
-    const tunnelUrl = 'https://ten-carrots-find.loca.lt/sinais';
-    
+    // Tenta primeiro o túnel seguro
     try {
-      const response = await fetch(tunnelUrl, {
+      const response = await fetch('https://ten-carrots-find.loca.lt/sinais', {
         headers: { 'Bypass-Tunnel-Reminder': 'true' }
       });
       
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
+        if (!connected) toast.success("Conectado ao Robô via Túnel!");
         setConnected(true);
         setLoading(false);
         return;
       }
     } catch (e) {
-      console.log("Localtunnel offline, tentando localhost...");
+      // Falhou túnel, tenta localhost
     }
 
-    // Prioridade 2: Localhost (Pode ser bloqueado pelo navegador se o site for HTTPS)
     try {
       const response = await fetch('http://127.0.0.1:5000/sinais');
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
+        if (!connected) toast.success("Conectado ao Robô Local!");
         setConnected(true);
       } else {
         setConnected(false);
       }
     } catch (err) {
+      if (connected) toast.error("Conexão com o robô perdida.");
       setConnected(false);
     } finally {
       setLoading(false);
@@ -110,7 +94,7 @@ export const useTradingSignals = () => {
     fetchSignals();
     const interval = setInterval(fetchSignals, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [connected]);
 
   return { signals, loading, connected, refetch: fetchSignals };
 };
