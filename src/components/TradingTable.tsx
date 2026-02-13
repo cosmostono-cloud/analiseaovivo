@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SignalBadge from './SignalBadge';
 import { TradingSignal } from '@/hooks/useTradingSignals';
-import { Loader2, Info, Timer, Zap, CheckCircle2, Circle, ArrowRightCircle } from 'lucide-react';
+import { Loader2, ArrowRightCircle, CheckCircle2, Circle } from 'lucide-react';
 
 interface TradingTableProps {
   signals: TradingSignal[];
@@ -21,7 +21,7 @@ interface TradingTableProps {
 }
 
 const TradingTable = ({ signals, loading }: TradingTableProps) => {
-  if (loading && signals.length === 0) {
+  if (loading && (!signals || signals.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
@@ -45,8 +45,15 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {signals.map((item, index) => {
+              {signals && signals.map((item, index) => {
                 const isOpportunity = item.status === 'AGORA';
+                // Proteção para evitar erro se validacoes for undefined
+                const validacoes = item.validacoes || {
+                  tendenciaM15: false,
+                  zonaValor: false,
+                  volumeConfirmado: false,
+                  gatilhoMicro: false
+                };
                 
                 return (
                   <TableRow 
@@ -84,19 +91,19 @@ const TradingTable = ({ signals, loading }: TradingTableProps) => {
                     <TableCell className="py-5">
                       <div className="flex gap-3">
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.tendenciaM15 ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          {validacoes.tendenciaM15 ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
                           <span className="text-[8px] font-bold text-slate-500 uppercase">M15</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.zonaValor ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          {validacoes.zonaValor ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
                           <span className="text-[8px] font-bold text-slate-500 uppercase">Zona</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.volumeConfirmado ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          {validacoes.volumeConfirmado ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
                           <span className="text-[8px] font-bold text-slate-500 uppercase">Vol</span>
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                          {item.validacoes.gatilhoMicro ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
+                          {validacoes.gatilhoMicro ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Circle className="h-4 w-4 text-slate-700" />}
                           <span className="text-[8px] font-bold text-slate-500 uppercase">M2/3</span>
                         </div>
                       </div>
