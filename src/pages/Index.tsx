@@ -8,10 +8,11 @@ import { useTradingSignals } from "@/hooks/useTradingSignals";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target, GraduationCap, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target, GraduationCap, Sparkles, Wifi, WifiOff } from "lucide-react";
 
 const Index = () => {
-  const { signals, loading, refetch } = useTradingSignals();
+  const { signals, loading, connected, refetch } = useTradingSignals();
   const [trainingMode, setTrainingMode] = useState(true);
 
   return (
@@ -27,9 +28,19 @@ const Index = () => {
               <h1 className="text-2xl font-black tracking-tight text-white uppercase italic leading-none">
                 Scanner <span className="text-indigo-400">Método Águia</span>
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Larissa Sihle • Premium Access</p>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-1.5">
+                  {connected ? (
+                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] px-1.5 py-0 h-4">
+                      <Wifi className="h-2.5 w-2.5 mr-1" /> ROBÔ ONLINE
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 text-[9px] px-1.5 py-0 h-4">
+                      <WifiOff className="h-2.5 w-2.5 mr-1" /> ROBÔ OFFLINE
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Larissa Sihle • Premium</p>
               </div>
             </div>
           </div>
@@ -53,7 +64,7 @@ const Index = () => {
               className="bg-slate-900 border-slate-700 hover:bg-slate-800 text-white gap-2 rounded-xl h-10 px-5 transition-all active:scale-95"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-500' : ''}`} />
-              {loading ? 'Atualizando...' : 'Atualizar Agora'}
+              {loading ? 'Sincronizando...' : 'Sincronizar Robô'}
             </Button>
           </div>
         </div>
@@ -67,44 +78,43 @@ const Index = () => {
               <Sparkles className="h-3 w-3" /> {trainingMode ? 'Modo Deus Ativado' : 'Dashboard de Sinais'}
             </div>
             <h2 className="text-4xl font-black text-white leading-tight">
-              Entradas Sniper <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">M2 & M3 Confirmadas</span>
+              Monitoramento <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Multi-Ativos Sniper</span>
             </h2>
             <p className="text-slate-400 max-w-xl text-lg leading-relaxed">
-              {trainingMode 
-                ? "Visualizando rastro institucional e cálculos de payoff baseados no operacional premium."
-                : "Análise de contexto em tempos maiores com gatilhos de precisão em micro-timeframes."}
+              {connected 
+                ? "Conectado ao robô de análise institucional. Dados em tempo real."
+                : "Robô não detectado em 127.0.0.1:5000. Exibindo dados de simulação para treino."}
             </p>
           </div>
           
           <div className="flex gap-4">
             <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl min-w-[140px] backdrop-blur-sm">
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Oportunidades</p>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Ativos</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-mono font-bold text-white">03</p>
-                <span className="text-xs text-emerald-500 font-bold">Ativas</span>
+                <p className="text-3xl font-mono font-bold text-white">{signals.length}</p>
+                <span className="text-xs text-indigo-400 font-bold">Monitorados</span>
               </div>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl min-w-[140px] backdrop-blur-sm">
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Assertividade</p>
+              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Status Robô</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-mono font-bold text-white">82</p>
-                <span className="text-xs text-indigo-400 font-bold">%</span>
+                <p className={`text-sm font-bold ${connected ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {connected ? 'CONECTADO' : 'OFFLINE'}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Tabela de Sinais (Ocupa 3 colunas) */}
           <div className="lg:col-span-3 relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/30 to-violet-500/30 rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
             <TradingTable signals={signals} loading={loading} />
           </div>
 
-          {/* Sidebar de Treinamento (Ocupa 1 coluna) */}
           <div className="space-y-6">
-            {trainingMode && signals.filter(s => s.status === 'AGORA').map((signal, idx) => (
+            {trainingMode && signals.filter(s => s.status === 'AGORA').slice(0, 2).map((signal, idx) => (
               <TradePlanCard key={idx} signal={signal} />
             ))}
             
@@ -113,34 +123,9 @@ const Index = () => {
                 <GraduationCap className="h-3 w-3" /> Dica da Larissa
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                "O segredo não é o indicador, é o rastro. Se o M15 não autoriza, o M2 não entra. Espere a exaustão do player contrário."
+                "Se o robô estiver offline, certifique-se de que o script Python está rodando na porta 5000. O Scanner precisa desse rastro para validar o vácuo livre."
               </p>
             </div>
-          </div>
-        </div>
-        
-        {/* Footer Info */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
-            <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4">
-              <Target className="h-5 w-5 text-indigo-400" />
-            </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Gatilho Sniper</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">As entradas são refinadas nos tempos de 2 e 3 minutos. Isso permite um Stop Loss mais curto e um alvo muito mais longo.</p>
-          </div>
-          <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
-            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
-              <ShieldCheck className="h-5 w-5 text-emerald-400" />
-            </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Contexto Macro</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">O scanner valida a tendência no M15 e H1 antes de buscar o gatilho no micro. Nunca opere contra a tendência principal.</p>
-          </div>
-          <div className="p-8 bg-slate-900/40 border border-slate-800/50 rounded-3xl hover:border-indigo-500/30 transition-colors">
-            <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center mb-4">
-              <Timer className="h-5 w-5 text-amber-400" />
-            </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest mb-3">Filtro de Volatilidade</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">Em tempos curtos (M2/M3), o volume é crucial. O sinal "AGORA" só aparece quando há agressão institucional confirmada.</p>
           </div>
         </div>
       </main>
