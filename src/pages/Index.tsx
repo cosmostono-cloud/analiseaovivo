@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, TrendingUp, GraduationCap, Sparkles, Wifi, WifiOff, AlertCircle } from "lucide-react";
+import { RefreshCw, TrendingUp, AlertCircle, ExternalLink } from "lucide-react";
 
 const Index = () => {
   const { signals = [], loading, connected, lastError, attemptCount, refetch } = useTradingSignals();
@@ -58,12 +58,28 @@ const Index = () => {
 
           <div className="space-y-6">
             {!connected && (
-              <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl">
-                <h3 className="text-[10px] font-black text-rose-400 uppercase mb-2 flex items-center gap-2">
-                  <AlertCircle className="h-3 w-3" /> Status da Conexão
+              <div className="p-5 bg-rose-500/5 border border-rose-500/20 rounded-xl space-y-4">
+                <h3 className="text-[10px] font-black text-rose-400 uppercase flex items-center gap-2">
+                  <AlertCircle className="h-3 w-3" /> Erro de Conexão
                 </h3>
-                <p className="text-[10px] text-slate-400">Tentativas: {attemptCount}</p>
-                <p className="text-[10px] text-rose-400 font-bold mt-1">Erro: {lastError || "Aguardando..."}</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-slate-400">Tentativas: {attemptCount}</p>
+                  <p className="text-[10px] text-rose-400 font-bold">Motivo: {lastError}</p>
+                </div>
+                
+                <div className="pt-2 border-t border-rose-500/10">
+                  <p className="text-[11px] text-slate-300 mb-3">
+                    Clique no botão abaixo. Se abrir uma página com códigos, o erro é apenas a permissão do navegador.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-[10px] h-8 border-rose-500/30 text-rose-400 hover:bg-rose-500/10"
+                    onClick={() => window.open('http://127.0.0.1:5000/sinais', '_blank')}
+                  >
+                    <ExternalLink className="h-3 w-3 mr-2" /> Testar Robô Local
+                  </Button>
+                </div>
               </div>
             )}
 
