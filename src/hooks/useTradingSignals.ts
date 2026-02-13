@@ -28,7 +28,7 @@ export interface TradingSignal {
 
 const MOCK_DATA: TradingSignal[] = [
   { 
-    ativo: "AGUARDANDO ROBÔ...", 
+    ativo: "CONECTANDO...", 
     preco: 0, 
     sinal: "AGUARDANDO", 
     status: "AGUARDANDO",
@@ -39,8 +39,8 @@ const MOCK_DATA: TradingSignal[] = [
       stopLoss: 0,
       takeProfit: 0,
       payoff: "1:1",
-      regraAplicada: "Verifique se o script Python está rodando na porta 5000.",
-      contextoMacro: "Tentando conexão local...",
+      regraAplicada: "Aguardando permissão do navegador para ler o robô local.",
+      contextoMacro: "Verifique o cadeado na barra de endereços.",
       suporteResistencia: "---"
     }
   }
@@ -57,54 +57,44 @@ export const useTradingSignals = () => {
     setLoading(true);
     setAttemptCount(prev => prev + 1);
     
-    const urls = [
-      'http://127.0.0.1:5000/sinais',
-      'http://localhost:5000/sinais'
-    ];
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-    let success = false;
-    let errorMsg = "";
+      // Tentamos primeiro o IP padrão do Flask
+      const response = await fetch('http://127.0.0.1:5000/sinais', {
+        mode: 'cors',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
 
-    for (const url of urls) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-        const response = await fetch(url, {
-          mode: 'cors',
-          headers: { 'Accept': 'application/json' },
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          setSignals(data);
-          if (!connected) toast.success("Robô Conectado!");
-          setConnected(true);
-          setLastError(null);
-          success = true;
-          break;
-        } else {
-          errorMsg = `Erro HTTP: ${response.status}`;
+      if (response.ok) {
+        const data = await response.json();
+        setSignals(data);
+        if (!connected) {
+          toast.success("Scanner Conectado com Sucesso!", {
+            description: "Rastro institucional sendo mapeado em tempo real.",
+            duration: 5000,
+          });
         }
-      } catch (e: any) {
-        errorMsg = e.name === 'AbortError' ? "Timeout (Robô lento)" : e.message;
+        setConnected(true);
+        setLastError(null);
+      } else {
+        throw new Error(`Erro HTTP: ${response.status}`);
       }
-    }
-
-    if (!success) {
+    } catch (e: any) {
       setConnected(false);
-      setLastError(errorMsg);
+      setLastError(e.name === 'AbortError' ? "Timeout (Robô lento)" : "Bloqueio de Segurança ou Robô Offline");
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 4000);
+    const interval = setInterval(fetchSignals, 3000); // Atualiza a cada 3 segundos
     return () => clearInterval(interval);
   }, []);
 
