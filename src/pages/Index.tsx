@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, TrendingUp, AlertCircle, ExternalLink } from "lucide-react";
+import { RefreshCw, TrendingUp, AlertCircle, ExternalLink, ShieldAlert } from "lucide-react";
 
 const Index = () => {
   const { signals = [], loading, connected, lastError, attemptCount, refetch } = useTradingSignals();
@@ -60,25 +60,30 @@ const Index = () => {
             {!connected && (
               <div className="p-5 bg-rose-500/5 border border-rose-500/20 rounded-xl space-y-4">
                 <h3 className="text-[10px] font-black text-rose-400 uppercase flex items-center gap-2">
-                  <AlertCircle className="h-3 w-3" /> Erro de Conexão
+                  <ShieldAlert className="h-3 w-3" /> Bloqueio Detectado
                 </h3>
-                <div className="space-y-1">
-                  <p className="text-[10px] text-slate-400">Tentativas: {attemptCount}</p>
-                  <p className="text-[10px] text-rose-400 font-bold">Motivo: {lastError}</p>
+                <div className="space-y-2">
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    O aviso de <span className="text-rose-400 font-bold">"Não Seguro"</span> no navegador é normal. 
+                    O problema agora é a permissão no seu código Python.
+                  </p>
+                  <div className="bg-slate-950 p-2 rounded border border-slate-800 font-mono text-[9px] text-emerald-400">
+                    pip install flask-cors
+                  </div>
                 </div>
                 
                 <div className="pt-2 border-t border-rose-500/10">
-                  <p className="text-[11px] text-slate-300 mb-3">
-                    Clique no botão abaixo. Se abrir uma página com códigos, o erro é apenas a permissão do navegador.
-                  </p>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full text-[10px] h-8 border-rose-500/30 text-rose-400 hover:bg-rose-500/10"
+                    className="w-full text-[10px] h-8 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
                     onClick={() => window.open('http://127.0.0.1:5000/sinais', '_blank')}
                   >
-                    <ExternalLink className="h-3 w-3 mr-2" /> Testar Robô Local
+                    <ExternalLink className="h-3 w-3 mr-2" /> Abrir Robô no Navegador
                   </Button>
+                  <p className="text-[9px] text-slate-500 mt-2 text-center italic">
+                    Se abrir o JSON no link acima, o erro é o CORS no Python.
+                  </p>
                 </div>
               </div>
             )}
