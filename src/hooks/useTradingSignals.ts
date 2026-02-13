@@ -54,10 +54,11 @@ export const useTradingSignals = () => {
 
   const fetchSignals = useCallback(async (isManual = false) => {
     setLoading(true);
+    console.log("Iniciando busca de sinais em http://127.0.0.1:5000/sinais...");
     
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       const response = await fetch('http://127.0.0.1:5000/sinais', {
         method: 'GET',
@@ -70,27 +71,32 @@ export const useTradingSignals = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Dados recebidos do Robô:", data);
         
-        // Só atualiza se houver dados reais
         if (data && Array.isArray(data) && data.length > 0) {
           setSignals(data);
           if (!connected || isManual) {
-            toast.success("Dados Sincronizados", { duration: 2000 });
+            toast.success("Scanner Sincronizado!");
           }
           setConnected(true);
           setLastError(null);
         } else {
-          // Se o robô responder OK mas a lista estiver vazia
-          setLastError("Robô online, mas sem sinais no momento.");
-          setConnected(true); 
+          console.warn("Robô respondeu, mas a lista de sinais está vazia.");
+          setConnected(true);
+          // Se estiver conectado mas sem dados, limpamos o "Aguardando"
+          if (data && Array.isArray(data)) setSignals([]); 
         }
       } else {
+        console.error("Erro na resposta do servidor:", response.status);
         setConnected(false);
-        setLastError(`Erro ${response.status}`);
       }
     } catch (e: any) {
+      console.error("Falha crítica na conexão:", e.message);
+      if (e.name === 'AbortError') {
+        console.error("O robô demorou demais para responder (Timeout).");
+      }
       setConnected(false);
-      setLastError(e.name === 'AbortError' ? "Tempo esgotado" : "Robô Offline");
+      setLastError(e.message);
     } finally {
       setLoading(false);
     }
@@ -98,7 +104,6 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    // Atualiza a cada 20 segundos
     const interval = setInterval(() => fetchSignals(false), 20000);
     return () => clearInterval(interval);
   }, [fetchSignals]);
