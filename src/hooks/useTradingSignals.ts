@@ -70,14 +70,13 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     try {
-      // Tenta acessar o túnel
-      const response = await fetch('https://ten-carrots-find.loca.lt/sinais', {
+      // Conectando diretamente ao localhost do seu computador
+      const response = await fetch('http://127.0.0.1:5000/sinais', {
         method: 'GET',
+        mode: 'cors',
         headers: {
-          'Bypass-Tunnel-Reminder': 'true',
           'Accept': 'application/json'
-        },
-        mode: 'cors'
+        }
       });
       
       if (response.ok) {
@@ -85,11 +84,10 @@ export const useTradingSignals = () => {
         setSignals(data);
         setConnected(true);
       } else {
-        console.warn("Robô respondeu com erro:", response.status);
         setConnected(false);
       }
     } catch (err) {
-      console.error("Erro de conexão com o robô:", err);
+      console.error("Erro ao conectar no localhost:5000. Verifique se o robô está rodando e se o CORS está ativo.");
       setConnected(false);
     } finally {
       setLoading(false);
@@ -98,7 +96,7 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 10000);
+    const interval = setInterval(fetchSignals, 5000); // Atualiza mais rápido (5s) para localhost
     return () => clearInterval(interval);
   }, []);
 
