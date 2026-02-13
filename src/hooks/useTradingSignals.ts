@@ -172,7 +172,13 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:5000/sinais');
+      // Usando o link do Localtunnel fornecido
+      const response = await fetch('https://ten-carrots-find.loca.lt/sinais', {
+        headers: {
+          'Bypass-Tunnel-Reminder': 'true' // Cabeçalho comum para evitar a página de aviso do Localtunnel
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
@@ -182,7 +188,7 @@ export const useTradingSignals = () => {
       }
     } catch (err) {
       setConnected(false);
-      // Mantém mocks se a API não estiver rodando
+      // Mantém mocks se a API não estiver acessível
     } finally {
       setLoading(false);
     }
