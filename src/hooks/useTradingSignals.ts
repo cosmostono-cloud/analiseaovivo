@@ -69,16 +69,29 @@ export const useTradingSignals = () => {
 
   const fetchSignals = async () => {
     setLoading(true);
+    
+    // Prioridade 1: Localtunnel (HTTPS - Evita bloqueio do navegador)
+    const tunnelUrl = 'https://ten-carrots-find.loca.lt/sinais';
+    
     try {
-      // Conectando diretamente ao localhost do seu computador
-      const response = await fetch('http://127.0.0.1:5000/sinais', {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json'
-        }
+      const response = await fetch(tunnelUrl, {
+        headers: { 'Bypass-Tunnel-Reminder': 'true' }
       });
       
+      if (response.ok) {
+        const data = await response.json();
+        setSignals(data);
+        setConnected(true);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.log("Localtunnel offline, tentando localhost...");
+    }
+
+    // Prioridade 2: Localhost (Pode ser bloqueado pelo navegador se o site for HTTPS)
+    try {
+      const response = await fetch('http://127.0.0.1:5000/sinais');
       if (response.ok) {
         const data = await response.json();
         setSignals(data);
@@ -87,7 +100,6 @@ export const useTradingSignals = () => {
         setConnected(false);
       }
     } catch (err) {
-      console.error("Erro ao conectar no localhost:5000. Verifique se o robô está rodando e se o CORS está ativo.");
       setConnected(false);
     } finally {
       setLoading(false);
@@ -96,7 +108,7 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 5000); // Atualiza mais rápido (5s) para localhost
+    const interval = setInterval(fetchSignals, 5000);
     return () => clearInterval(interval);
   }, []);
 
