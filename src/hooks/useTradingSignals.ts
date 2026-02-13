@@ -39,8 +39,8 @@ const MOCK_DATA: TradingSignal[] = [
       stopLoss: 0,
       takeProfit: 0,
       payoff: "1:1",
-      regraAplicada: "Aguardando permissão do navegador para ler o robô local.",
-      contextoMacro: "Verifique o cadeado na barra de endereços.",
+      regraAplicada: "Verificando conexão com o robô local...",
+      contextoMacro: "Aguardando resposta do servidor Flask.",
       suporteResistencia: "---"
     }
   }
@@ -59,12 +59,15 @@ export const useTradingSignals = () => {
     
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      // Tentamos primeiro o IP padrão do Flask
       const response = await fetch('http://127.0.0.1:5000/sinais', {
+        method: 'GET',
         mode: 'cors',
-        headers: { 'Accept': 'application/json' },
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
         signal: controller.signal
       });
       
@@ -74,19 +77,26 @@ export const useTradingSignals = () => {
         const data = await response.json();
         setSignals(data);
         if (!connected) {
-          toast.success("Scanner Conectado com Sucesso!", {
-            description: "Rastro institucional sendo mapeado em tempo real.",
-            duration: 5000,
+          toast.success("Scanner Conectado!", {
+            description: "Sinais sincronizados com sucesso.",
+            duration: 3000,
           });
         }
         setConnected(true);
         setLastError(null);
       } else {
-        throw new Error(`Erro HTTP: ${response.status}`);
+        setLastError(`Erro do Servidor (${response.status})`);
+        setConnected(false);
       }
     } catch (e: any) {
       setConnected(false);
-      setLastError(e.name === 'AbortError' ? "Timeout (Robô lento)" : "Bloqueio de Segurança ou Robô Offline");
+      if (e.name === 'AbortError') {
+        setLastError("Tempo esgotado (Robô lento)");
+      } else if (e.message.includes('Failed to fetch')) {
+        setLastError("Bloqueio de CORS ou Navegador. Verifique o Python.");
+      } else {
+        setLastError(e.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -94,7 +104,7 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 3000); // Atualiza a cada 3 segundos
+    const interval = setInterval(fetchSignals, 4000);
     return () => clearInterval(interval);
   }, []);
 
