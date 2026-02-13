@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from "sonner";
 
 export interface TradingSignal {
@@ -28,7 +28,7 @@ export interface TradingSignal {
 
 const MOCK_DATA: TradingSignal[] = [
   { 
-    ativo: "CONECTANDO...", 
+    ativo: "AGUARDANDO ROBÔ...", 
     preco: 0, 
     sinal: "AGUARDANDO", 
     status: "AGUARDANDO",
@@ -39,8 +39,8 @@ const MOCK_DATA: TradingSignal[] = [
       stopLoss: 0,
       takeProfit: 0,
       payoff: "1:1",
-      regraAplicada: "Verificando conexão com o robô local...",
-      contextoMacro: "Aguardando resposta do servidor Flask.",
+      regraAplicada: "Inicie o robô Python para ver os sinais.",
+      contextoMacro: "Conexão pendente.",
       suporteResistencia: "---"
     }
   }
@@ -48,26 +48,21 @@ const MOCK_DATA: TradingSignal[] = [
 
 export const useTradingSignals = () => {
   const [signals, setSignals] = useState<TradingSignal[]>(MOCK_DATA);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
-  const [attemptCount, setAttemptCount] = useState(0);
 
-  const fetchSignals = async () => {
+  const fetchSignals = useCallback(async (isManual = false) => {
     setLoading(true);
-    setAttemptCount(prev => prev + 1);
     
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const response = await fetch('http://127.0.0.1:5000/sinais', {
         method: 'GET',
         mode: 'cors',
-        headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Accept': 'application/json' },
         signal: controller.signal
       });
       
@@ -75,38 +70,44 @@ export const useTradingSignals = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setSignals(data);
-        if (!connected) {
-          toast.success("Scanner Conectado!", {
-            description: "Sinais sincronizados com sucesso.",
-            duration: 3000,
-          });
+        
+        // Só atualiza se houver dados reais
+        if (data && Array.isArray(data) && data.length > 0) {
+          setSignals(data);
+          if (!connected || isManual) {
+            toast.success("Dados Sincronizados", { duration: 2000 });
+          }
+          setConnected(true);
+          setLastError(null);
+        } else {
+          // Se o robô responder OK mas a lista estiver vazia
+          setLastError("Robô online, mas sem sinais no momento.");
+          setConnected(true); 
         }
-        setConnected(true);
-        setLastError(null);
       } else {
-        setLastError(`Erro do Servidor (${response.status})`);
         setConnected(false);
+        setLastError(`Erro ${response.status}`);
       }
     } catch (e: any) {
       setConnected(false);
-      if (e.name === 'AbortError') {
-        setLastError("Tempo esgotado (Robô lento)");
-      } else if (e.message.includes('Failed to fetch')) {
-        setLastError("Bloqueio de CORS ou Navegador. Verifique o Python.");
-      } else {
-        setLastError(e.message);
-      }
+      setLastError(e.name === 'AbortError' ? "Tempo esgotado" : "Robô Offline");
     } finally {
       setLoading(false);
     }
-  };
+  }, [connected]);
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 4000);
+    // Atualiza a cada 20 segundos
+    const interval = setInterval(() => fetchSignals(false), 20000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchSignals]);
 
-  return { signals, loading, connected, lastError, attemptCount, refetch: fetchSignals };
+  return { 
+    signals, 
+    loading, 
+    connected, 
+    lastError, 
+    refetch: () => fetchSignals(true) 
+  };
 };
