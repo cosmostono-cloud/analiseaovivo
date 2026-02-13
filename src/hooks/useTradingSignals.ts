@@ -28,20 +28,20 @@ export interface TradingSignal {
 
 const MOCK_DATA: TradingSignal[] = [
   { 
-    ativo: "ÍNDICE (WIN)", 
-    preco: 128450, 
-    sinal: "COMPRA", 
-    status: "AGORA",
+    ativo: "AGUARDANDO ROBÔ...", 
+    preco: 0, 
+    sinal: "AGUARDANDO", 
+    status: "AGUARDANDO",
     metodo: "TENDÊNCIA",
-    vacuoLivre: "450 pts até VWAP",
-    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: true, zonaValor: true },
+    vacuoLivre: "---",
+    validacoes: { tendenciaM15: false, volumeConfirmado: false, gatilhoMicro: false, zonaValor: false },
     detalhesTecnicos: {
-      stopLoss: 128320,
-      takeProfit: 128900,
-      payoff: "1:3.5",
-      regraAplicada: "Módulo 03: Rastro Institucional",
-      contextoMacro: "Tendência de alta no M15.",
-      suporteResistencia: "Suporte em 128.200"
+      stopLoss: 0,
+      takeProfit: 0,
+      payoff: "1:1",
+      regraAplicada: "Inicie o script Python para ver os sinais reais.",
+      contextoMacro: "Aguardando conexão...",
+      suporteResistencia: "---"
     }
   }
 ];
@@ -54,45 +54,52 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     
-    // Tenta primeiro o túnel seguro
-    try {
-      const response = await fetch('https://ten-carrots-find.loca.lt/sinais', {
-        headers: { 'Bypass-Tunnel-Reminder': 'true' }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSignals(data);
-        if (!connected) toast.success("Conectado ao Robô via Túnel!");
-        setConnected(true);
-        setLoading(false);
-        return;
+    // Tentamos as duas URLs em paralelo para ganhar velocidade
+    const urls = [
+      'http://127.0.0.1:5000/sinais',
+      'https://ten-carrots-find.loca.lt/sinais'
+    ];
+
+    let success = false;
+
+    for (const url of urls) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // Timeout de 2s
+
+        const response = await fetch(url, {
+          headers: { 'Bypass-Tunnel-Reminder': 'true' },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          setSignals(data);
+          if (!connected) {
+            toast.success(`Conectado ao Robô! (${url.includes('127.0.0.1') ? 'Local' : 'Túnel'})`);
+          }
+          setConnected(true);
+          success = true;
+          break; // Para no primeiro que funcionar
+        }
+      } catch (e) {
+        // Falha silenciosa para tentar a próxima URL
       }
-    } catch (e) {
-      // Falhou túnel, tenta localhost
     }
 
-    try {
-      const response = await fetch('http://127.0.0.1:5000/sinais');
-      if (response.ok) {
-        const data = await response.json();
-        setSignals(data);
-        if (!connected) toast.success("Conectado ao Robô Local!");
-        setConnected(true);
-      } else {
-        setConnected(false);
-      }
-    } catch (err) {
+    if (!success) {
       if (connected) toast.error("Conexão com o robô perdida.");
       setConnected(false);
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 5000);
+    const interval = setInterval(fetchSignals, 3000); // Atualiza a cada 3 segundos
     return () => clearInterval(interval);
   }, [connected]);
 
