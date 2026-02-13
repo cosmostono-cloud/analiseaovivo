@@ -50,26 +50,29 @@ export const useTradingSignals = () => {
   const [signals, setSignals] = useState<TradingSignal[]>(MOCK_DATA);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [attemptCount, setAttemptCount] = useState(0);
 
   const fetchSignals = async () => {
     setLoading(true);
+    setAttemptCount(prev => prev + 1);
     
-    // Lista de URLs para tentar conexão
     const urls = [
-      'http://localhost:5000/sinais',
       'http://127.0.0.1:5000/sinais',
-      'https://ten-carrots-find.loca.lt/sinais'
+      'http://localhost:5000/sinais'
     ];
 
     let success = false;
+    let errorMsg = "";
 
     for (const url of urls) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
 
         const response = await fetch(url, {
-          headers: { 'Bypass-Tunnel-Reminder': 'true' },
+          mode: 'cors',
+          headers: { 'Accept': 'application/json' },
           signal: controller.signal
         });
         
@@ -78,24 +81,22 @@ export const useTradingSignals = () => {
         if (response.ok) {
           const data = await response.json();
           setSignals(data);
-          if (!connected) {
-            toast.success(`Robô Detectado em: ${url}`);
-            console.log(`✅ Conectado com sucesso a: ${url}`);
-          }
+          if (!connected) toast.success("Robô Conectado!");
           setConnected(true);
+          setLastError(null);
           success = true;
           break;
+        } else {
+          errorMsg = `Erro HTTP: ${response.status}`;
         }
       } catch (e: any) {
-        console.warn(`Tentativa falhou para ${url}:`, e.message);
+        errorMsg = e.name === 'AbortError' ? "Timeout (Robô lento)" : e.message;
       }
     }
 
     if (!success) {
-      if (connected) {
-        toast.error("Conexão com o robô perdida.");
-        setConnected(false);
-      }
+      setConnected(false);
+      setLastError(errorMsg);
     }
     
     setLoading(false);
@@ -103,9 +104,9 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 3000);
+    const interval = setInterval(fetchSignals, 4000);
     return () => clearInterval(interval);
-  }, [connected]);
+  }, []);
 
-  return { signals, loading, connected, refetch: fetchSignals };
+  return { signals, loading, connected, lastError, attemptCount, refetch: fetchSignals };
 };

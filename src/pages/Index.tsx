@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, TrendingUp, ShieldCheck, Zap, LayoutDashboard, Timer, Target, GraduationCap, Sparkles, Wifi, WifiOff } from "lucide-react";
+import { RefreshCw, TrendingUp, GraduationCap, Sparkles, Wifi, WifiOff, AlertCircle, Activity } from "lucide-react";
 
 const Index = () => {
-  const { signals, loading, connected, refetch } = useTradingSignals();
+  const { signals, loading, connected, lastError, attemptCount, refetch } = useTradingSignals();
   const [trainingMode, setTrainingMode] = useState(true);
 
   return (
@@ -81,11 +81,6 @@ const Index = () => {
               Monitoramento <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">Multi-Ativos Sniper</span>
             </h2>
-            <p className="text-slate-400 max-w-xl text-lg leading-relaxed">
-              {connected 
-                ? "Conectado ao robô de análise institucional. Dados em tempo real."
-                : "Robô não detectado em 127.0.0.1:5000. Exibindo dados de simulação para treino."}
-            </p>
           </div>
           
           <div className="flex gap-4">
@@ -94,14 +89,6 @@ const Index = () => {
               <div className="flex items-baseline gap-2">
                 <p className="text-3xl font-mono font-bold text-white">{signals.length}</p>
                 <span className="text-xs text-indigo-400 font-bold">Monitorados</span>
-              </div>
-            </div>
-            <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl min-w-[140px] backdrop-blur-sm">
-              <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Status Robô</p>
-              <div className="flex items-baseline gap-2">
-                <p className={`text-sm font-bold ${connected ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {connected ? 'CONECTADO' : 'OFFLINE'}
-                </p>
               </div>
             </div>
           </div>
@@ -114,6 +101,30 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
+            {/* Painel de Diagnóstico */}
+            {!connected && (
+              <div className="p-5 bg-rose-500/5 border border-rose-500/20 rounded-2xl space-y-3">
+                <h3 className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-2">
+                  <AlertCircle className="h-3 w-3" /> Diagnóstico de Conexão
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-slate-500">Tentativas:</span>
+                    <span className="text-slate-300 font-mono">{attemptCount}</span>
+                  </div>
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-slate-500">Último Erro:</span>
+                    <span className="text-rose-400 font-bold">{lastError || "Nenhum"}</span>
+                  </div>
+                  <div className="pt-2 border-t border-rose-500/10">
+                    <p className="text-[9px] text-slate-400 leading-relaxed">
+                      Se o erro for <span className="text-white">"Failed to fetch"</span>, o navegador está bloqueando o HTTP. Clique no cadeado da URL e permita "Conteúdo Inseguro".
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {trainingMode && signals.filter(s => s.status === 'AGORA').slice(0, 2).map((signal, idx) => (
               <TradePlanCard key={idx} signal={signal} />
             ))}
@@ -123,7 +134,7 @@ const Index = () => {
                 <GraduationCap className="h-3 w-3" /> Dica da Larissa
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                "Se o robô estiver offline, certifique-se de que o script Python está rodando na porta 5000. O Scanner precisa desse rastro para validar o vácuo livre."
+                "O Scanner precisa do rastro institucional para validar o vácuo livre. Sem o robô Python, você está operando no escuro."
               </p>
             </div>
           </div>
