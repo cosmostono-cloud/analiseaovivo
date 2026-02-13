@@ -59,108 +59,6 @@ const MOCK_DATA: TradingSignal[] = [
       contextoMacro: "Dólar esticado no H1.",
       suporteResistencia: "Resistência em 5.140"
     }
-  },
-  { 
-    ativo: "US500", 
-    preco: 5132.25, 
-    sinal: "COMPRA", 
-    status: "AGORA",
-    metodo: "TENDÊNCIA",
-    vacuoLivre: "15 pts (Céu Limpo)",
-    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: true, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 5126.00,
-      takeProfit: 5150.00,
-      payoff: "1:3.0",
-      regraAplicada: "Módulo 02: Alinhamento M15+M2",
-      contextoMacro: "Rompimento com volume.",
-      suporteResistencia: "Suporte em 5120.00"
-    }
-  },
-  { 
-    ativo: "HK50", 
-    preco: 16742, 
-    sinal: "AGUARDANDO", 
-    status: "AGUARDANDO",
-    metodo: "REVERSÃO",
-    vacuoLivre: "200 pts até Topo",
-    validacoes: { tendenciaM15: false, volumeConfirmado: false, gatilhoMicro: false, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 16850,
-      takeProfit: 16400,
-      payoff: "1:3.5",
-      regraAplicada: "Módulo 05: Liquidez",
-      contextoMacro: "Consolidação lateral.",
-      suporteResistencia: "Resistência em 16.800"
-    }
-  },
-  { 
-    ativo: "GOLD (XAUUSD)", 
-    preco: 2345.6, 
-    sinal: "COMPRA", 
-    status: "IMINENTE",
-    metodo: "TENDÊNCIA",
-    vacuoLivre: "30 pts até Resistência",
-    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: false, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 2338.0,
-      takeProfit: 2375.0,
-      payoff: "1:4.2",
-      regraAplicada: "Módulo 03: Reversão",
-      contextoMacro: "Alta forte no diário.",
-      suporteResistencia: "Suporte em 2340.0"
-    }
-  },
-  { 
-    ativo: "NAS100", 
-    preco: 18245, 
-    sinal: "VENDA", 
-    status: "AGORA",
-    metodo: "TENDÊNCIA",
-    vacuoLivre: "120 pts até Média 200",
-    validacoes: { tendenciaM15: true, volumeConfirmado: true, gatilhoMicro: true, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 18275,
-      takeProfit: 18120,
-      payoff: "1:4.1",
-      regraAplicada: "Módulo 04: Topo Duplo",
-      contextoMacro: "Nasdaq esticada.",
-      suporteResistencia: "Resistência em 18.260"
-    }
-  },
-  { 
-    ativo: "EURUSD", 
-    preco: 1.0845, 
-    sinal: "AGUARDANDO", 
-    status: "AGUARDANDO",
-    metodo: "TENDÊNCIA",
-    vacuoLivre: "60 pips",
-    validacoes: { tendenciaM15: true, volumeConfirmado: false, gatilhoMicro: false, zonaValor: false },
-    detalhesTecnicos: {
-      stopLoss: 1.0820,
-      takeProfit: 1.0910,
-      payoff: "1:2.6",
-      regraAplicada: "Módulo 01: Estrutura",
-      contextoMacro: "Dólar perdendo força.",
-      suporteResistencia: "Suporte em 1.0830"
-    }
-  },
-  { 
-    ativo: "BTCUSD", 
-    preco: 64230, 
-    sinal: "VENDA", 
-    status: "IMINENTE",
-    metodo: "REVERSÃO",
-    vacuoLivre: "2500 pts",
-    validacoes: { tendenciaM15: false, volumeConfirmado: true, gatilhoMicro: false, zonaValor: true },
-    detalhesTecnicos: {
-      stopLoss: 65100,
-      takeProfit: 61500,
-      payoff: "1:3.1",
-      regraAplicada: "Módulo 05: Fakeout",
-      contextoMacro: "Resistência psicológica.",
-      suporteResistencia: "Resistência em 65.000"
-    }
   }
 ];
 
@@ -172,11 +70,14 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     try {
-      // Usando o link do Localtunnel fornecido
+      // Tenta acessar o túnel
       const response = await fetch('https://ten-carrots-find.loca.lt/sinais', {
+        method: 'GET',
         headers: {
-          'Bypass-Tunnel-Reminder': 'true' // Cabeçalho comum para evitar a página de aviso do Localtunnel
-        }
+          'Bypass-Tunnel-Reminder': 'true',
+          'Accept': 'application/json'
+        },
+        mode: 'cors'
       });
       
       if (response.ok) {
@@ -184,11 +85,12 @@ export const useTradingSignals = () => {
         setSignals(data);
         setConnected(true);
       } else {
+        console.warn("Robô respondeu com erro:", response.status);
         setConnected(false);
       }
     } catch (err) {
+      console.error("Erro de conexão com o robô:", err);
       setConnected(false);
-      // Mantém mocks se a API não estiver acessível
     } finally {
       setLoading(false);
     }
@@ -196,7 +98,7 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 10000); // Atualiza a cada 10s
+    const interval = setInterval(fetchSignals, 10000);
     return () => clearInterval(interval);
   }, []);
 
