@@ -39,8 +39,8 @@ const MOCK_DATA: TradingSignal[] = [
       stopLoss: 0,
       takeProfit: 0,
       payoff: "1:1",
-      regraAplicada: "Inicie o script Python para ver os sinais reais.",
-      contextoMacro: "Aguardando conexão...",
+      regraAplicada: "Verifique se o script Python está rodando na porta 5000.",
+      contextoMacro: "Tentando conexão local...",
       suporteResistencia: "---"
     }
   }
@@ -54,8 +54,9 @@ export const useTradingSignals = () => {
   const fetchSignals = async () => {
     setLoading(true);
     
-    // Tentamos as duas URLs em paralelo para ganhar velocidade
+    // Lista de URLs para tentar conexão
     const urls = [
+      'http://localhost:5000/sinais',
       'http://127.0.0.1:5000/sinais',
       'https://ten-carrots-find.loca.lt/sinais'
     ];
@@ -65,7 +66,7 @@ export const useTradingSignals = () => {
     for (const url of urls) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000); // Timeout de 2s
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
 
         const response = await fetch(url, {
           headers: { 'Bypass-Tunnel-Reminder': 'true' },
@@ -78,20 +79,23 @@ export const useTradingSignals = () => {
           const data = await response.json();
           setSignals(data);
           if (!connected) {
-            toast.success(`Conectado ao Robô! (${url.includes('127.0.0.1') ? 'Local' : 'Túnel'})`);
+            toast.success(`Robô Detectado em: ${url}`);
+            console.log(`✅ Conectado com sucesso a: ${url}`);
           }
           setConnected(true);
           success = true;
-          break; // Para no primeiro que funcionar
+          break;
         }
-      } catch (e) {
-        // Falha silenciosa para tentar a próxima URL
+      } catch (e: any) {
+        console.warn(`Tentativa falhou para ${url}:`, e.message);
       }
     }
 
     if (!success) {
-      if (connected) toast.error("Conexão com o robô perdida.");
-      setConnected(false);
+      if (connected) {
+        toast.error("Conexão com o robô perdida.");
+        setConnected(false);
+      }
     }
     
     setLoading(false);
@@ -99,7 +103,7 @@ export const useTradingSignals = () => {
 
   useEffect(() => {
     fetchSignals();
-    const interval = setInterval(fetchSignals, 3000); // Atualiza a cada 3 segundos
+    const interval = setInterval(fetchSignals, 3000);
     return () => clearInterval(interval);
   }, [connected]);
 
